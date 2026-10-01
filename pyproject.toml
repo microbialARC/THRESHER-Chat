@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "THRESHER-chat"
+version = "0.1.0"
+description = "THRESHER-chat is a local offline AI assistant that helps with setup, running the tool, explaining the algorithms, and interpreting results of THRESHER."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "GPL-3.0-or-later"}
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+authors = [
+    {name = "Qianxuan(Sean) She", email = "sheq@chop.edu"},
+    {name = "Paul J Planet", email = "planetp@chop.edu"},
+    {name = "Ahmed M Moustafa", email = "moustafaam@chop.edu"},
+    {name = "Joseph P Zackular", email = "joseph.zackular@pennmedicine.upenn.edu"}
+]
+dependencies = [
+    "langchain>=1.2.10",
+    "langchain-core>=1.2.10",
+    "langchain-chroma >= 1.1.0",
+    "langchain-community>=0.4.1",
+    "langchain-ollama>=1.0.1",
+    "langchain-text-splitters>=1.1.0",
+    "chromadb>=1.5.0",
+    "ollama>=0.6.1",
+    "flask>=3.1.2",
+    "psutil>=5.9",
+    "requests>=2.32.5"
+]
+
+[project.urls]
+Homepage = "https://github.com/microbialARC/THRESHER-Chat"
+Repository = "https://github.com/microbialARC/THRESHER-Chat"
+Issues = "https://github.com/microbialARC/THRESHER-Chat/issues"
+
+[project.scripts]
+thresher-chat = "thresher_chat.cli:main"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = ["thresher_chat*"]
+
+[tool.setuptools.package-data]
+"thresher_chat" = ["frontend/static/**/*", "guides/**/*"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["__pycache__", "*.pyc", "*.pyo"]

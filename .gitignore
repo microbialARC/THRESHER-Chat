@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments 
+.venv/
+venv/
+env/
+
+# ChromaDB vector store
+vectordb/
+chroma_db/
+.thresher-chat/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution
+*.tar.gz
+*.whl
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/

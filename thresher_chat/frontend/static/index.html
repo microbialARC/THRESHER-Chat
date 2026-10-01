@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THRESHER Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary:   #f2f6f8;
+      --bg-secondary: #e8eef2;
+      --bg-surface:   rgba(0,85,135,0.03);
+      --border:       rgba(0,85,135,0.12);
+      --border-hover: rgba(0,85,135,0.25);
+      --text-primary: #1a2e3a;
+      --text-muted:   #5a7a8a;
+      --text-dim:     #8aa0ae;
+      --text-secondary: #3a5a6a;
+      --accent:       #005587;
+      --accent-glow:  rgba(0,85,135,0.08);
+      --green-badge:  rgba(145,160,30,0.12);
+      --green-text:   #6a7a10;
+      --green-border: rgba(145,160,30,0.30);
+      --gradient-btn: linear-gradient(135deg, #005587, #2a8aba);
+      --warn:         #c0105a;
+      --warn-bg:      rgba(237,31,127,0.06);
+      --warn-border:  rgba(237,31,127,0.20);
+      --source-bg:    rgba(0,85,135,0.05);
+      --mono:         'IBM Plex Mono', monospace;
+      --sans:         'IBM Plex Sans', -apple-system, sans-serif;
+      --header-bg:    rgba(242,246,248,0.85);
+      --input-bg:     rgba(242,246,248,0.85);
+      --sidebar-logo-bg: linear-gradient(135deg, #41b6e6, #005587);
+      --user-bubble-bg:    rgba(0,85,135,0.08);
+      --user-bubble-border: rgba(0,85,135,0.18);
+      --user-bubble-text:  #0a2a3a;
+      --assist-bubble-bg:     rgba(0,0,0,0.02);
+      --assist-bubble-border: rgba(0,0,0,0.08);
+      --code-bg:       rgba(0,85,135,0.07);
+      --pre-bg:        rgba(0,0,0,0.05);
+      --upload-bg:     rgba(0,85,135,0.04);
+      --upload-border: rgba(0,85,135,0.15);
+      --upload-hover:  rgba(0,85,135,0.08);
+    }
+
+    [data-theme="dark"] {
+      --bg-primary:   #021a2e;
+      --bg-secondary: #011321;
+      --bg-surface:   rgba(65,182,230,0.04);
+      --border:       rgba(65,182,230,0.12);
+      --border-hover: rgba(65,182,230,0.28);
+      --text-primary: #c0d4de;
+      --text-muted:   #6a8a9a;
+      --text-dim:     #3a5a6e;
+      --text-secondary: #8ab0c0;
+      --accent:       #41b6e6;
+      --accent-glow:  rgba(65,182,230,0.10);
+      --green-badge:  rgba(145,160,30,0.12);
+      --green-text:   #91a01e;
+      --green-border: rgba(145,160,30,0.25);
+      --gradient-btn: linear-gradient(135deg, #005587, #41b6e6);
+      --warn:         #ed1f7f;
+      --warn-bg:      rgba(237,31,127,0.08);
+      --warn-border:  rgba(237,31,127,0.25);
+      --source-bg:    rgba(65,182,230,0.05);
+      --header-bg:    rgba(2,26,46,0.7);
+      --input-bg:     rgba(2,26,46,0.7);
+      --sidebar-logo-bg: linear-gradient(135deg, #005587, #41b6e6);
+      --user-bubble-bg:    rgba(65,182,230,0.10);
+      --user-bubble-border: rgba(65,182,230,0.22);
+      --user-bubble-text:  #d0e4ee;
+      --assist-bubble-bg:     rgba(255,255,255,0.03);
+      --assist-bubble-border: rgba(255,255,255,0.06);
+      --code-bg:       rgba(65,182,230,0.08);
+      --pre-bg:        rgba(0,0,0,0.30);
+      --upload-bg:     rgba(65,182,230,0.04);
+      --upload-border: rgba(65,182,230,0.15);
+      --upload-hover:  rgba(65,182,230,0.08);
+    }
+
+    html, body {
+      height: 100%; width: 100%;
+      font-family: var(--sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    .app        { display: flex; height: 100vh; }
+    .sidebar    {
+      width: 260px; background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+      transition: width 0.2s ease, padding 0.2s ease;
+      overflow: hidden;
+    }
+    .sidebar.collapsed { width: 0; padding: 0; border-right: none; }
+    .sidebar-scroll {
+      flex: 1; overflow-y: auto; min-height: 0;
+    }
+    .main       { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+    .btn-sidebar-toggle {
+      background: none; border: 1px solid var(--border); color: var(--text-muted);
+      font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+      font-family: var(--sans); transition: all 0.15s;
+    }
+    .btn-sidebar-toggle:hover { color: var(--accent); border-color: var(--border-hover); }
+
+    .sidebar-header {
+      padding: 24px 20px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .sidebar-title   { font-size: 16px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+    .sidebar-sub     { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .sidebar-status { padding: 16px 20px; }
+    .status-label { font-size: 12px; color: var(--green-text); font-weight: 600; }
+    .status-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-muted); }
+    .status-val { color: var(--accent); font-weight: 600; font-family: var(--mono); font-size: 10px; }
+    
+    .profile-section { padding: 4px 20px 16px; }
+    .profile-heading {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-muted); margin-bottom: 10px; font-weight: 600;
+    }
+    .profile-btn {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      padding: 8px 10px; margin-bottom: 3px; background: transparent;
+      border: 1px solid transparent; border-radius: 6px; cursor: pointer;
+      color: var(--text-muted); font-size: 13px; text-align: left; font-family: var(--sans);
+      transition: all 0.15s;
+    }
+    .profile-btn:hover { background: var(--accent-glow); color: var(--accent); }
+    .profile-btn.active { background: var(--accent-glow); border-color: var(--border-hover); color: var(--accent); }
+    .profile-name { font-weight: 600; }
+    .profile-desc { font-size: 10px; opacity: 0.6; }
+
+    .sidebar-logo {
+      padding: 16px 20px 8px; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .sidebar-logo img {
+      max-width: 100%; height: auto;
+      display: block; margin-left: auto; margin-right: auto;
+    }
+
+    .sidebar-footer {
+      padding: 10px 20px 16px; border-top: 1px solid var(--border);
+      font-size: 10px; color: var(--text-dim); line-height: 1.6; text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Memory Section ────────────────────────────────────────── */
+    .memory-section {
+      padding: 0 16px 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+    .memory-heading {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-muted);
+      padding: 12px 4px 6px; font-weight: 600;
+    }
+    .memory-stats-row {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--text-muted);
+      padding: 2px 4px;
+    }
+    .memory-stats-row .mem-val {
+      color: var(--accent); font-weight: 600; font-family: var(--mono); font-size: 10px;
+    }
+
+    .memory-actions {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      margin-top: 8px; padding: 0 4px;
+    }
+    .btn-memory {
+      padding: 4px 8px; font-size: 10px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text-muted);
+      cursor: pointer; font-family: var(--sans);
+      transition: all 0.15s;
+    }
+    .btn-memory:hover {
+      border-color: var(--border-hover); color: var(--text-secondary);
+    }
+    .btn-memory:disabled {
+      opacity: 0.4; cursor: default;
+    }
+    .btn-memory.btn-save-session {
+      background: var(--bg-surface);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    .btn-memory.btn-save-session:hover {
+      opacity: 0.85;
+    }
+    .btn-memory.btn-danger {
+      border-color: var(--warn-border); background: var(--warn-bg); color: var(--warn);
+    }
+    .btn-memory.btn-danger:hover {
+      opacity: 0.85;
+    }
+
+    /* Expandable drawers */
+    .memory-drawer {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease;
+      margin-top: 4px; padding: 0 4px;
+    }
+    .memory-drawer.open { max-height: 300px; overflow-y: auto; }
+
+    .profile-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 0; font-size: 11px; color: var(--text-muted);
+    }
+    .profile-attr {
+      font-weight: 600; color: var(--accent);
+      min-width: 80px; font-size: 10px; font-family: var(--mono);
+    }
+    .item-delete {
+      margin-left: auto; cursor: pointer;
+      color: var(--text-dim); font-size: 13px;
+      opacity: 0; transition: opacity 0.15s;
+      background: none; border: none; padding: 2px 4px;
+    }
+    .profile-item:hover .item-delete,
+    .objective-item:hover .item-delete { opacity: 1; }
+
+    .objective-item {
+      display: flex; align-items: flex-start; gap: 6px;
+      padding: 5px 0; font-size: 11px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .objective-item:last-child { border-bottom: none; }
+    .obj-status {
+      font-size: 9px; padding: 1px 5px;
+      border-radius: 4px; font-weight: 600;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .obj-status.active {
+      background: var(--green-badge); color: var(--green-text);
+    }
+    .obj-status.completed {
+      background: var(--bg-surface); color: var(--text-dim);
+      text-decoration: line-through;
+    }
+    .obj-status.archived {
+      background: var(--bg-surface); color: var(--text-dim);
+    }
+    .obj-actions {
+      margin-left: auto; display: flex; gap: 2px;
+      opacity: 0; transition: opacity 0.15s;
+    }
+    .objective-item:hover .obj-actions { opacity: 1; }
+    .obj-actions button {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-dim); font-size: 11px; padding: 2px 3px;
+    }
+    .obj-actions button:hover { color: var(--text-secondary); }
+
+    .summary-item {
+      padding: 5px 0; font-size: 11px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-date {
+      font-size: 9px; color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .drawer-empty {
+      padding: 8px 0; font-size: 11px;
+      color: var(--text-dim); font-style: italic;
+    }
+
+    .header {
+      padding: 14px 28px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--header-bg); backdrop-filter: blur(10px);
+    }
+    .header-title { font-size: 15px; font-weight: 600; color: var(--text-muted); }
+    .header-actions { display: flex; gap: 8px; }
+    .btn-header {
+      padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px;
+      font-family: var(--sans); transition: opacity 0.15s;
+    }
+    .btn-header:hover { opacity: 0.8; }
+    .btn-export { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted); }
+    .btn-clear  { background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn); }
+
+    .messages { flex: 1; overflow-y: auto; padding: 24px 28px; scroll-behavior: smooth; }
+    .msg-row { display: flex; flex-direction: column; margin-bottom: 20px; }
+    .msg-row.user   { align-items: flex-end; }
+    .msg-row.assistant { align-items: flex-start; }
+    .msg-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .msg-row.user .msg-meta { flex-direction: row-reverse; }
+    .msg-label { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+
+    .msg-bubble {
+      max-width: 75%; padding: 14px 18px; font-size: 14px;
+      line-height: 1.65; white-space: pre-wrap; word-wrap: break-word;
+    }
+    .msg-row.assistant .msg-bubble {
+      background: var(--assist-bubble-bg); border: 1px solid var(--assist-bubble-border);
+      border-radius: 14px 14px 14px 4px; color: var(--text-primary);
+    }
+    .msg-row.user .msg-bubble {
+      background: var(--user-bubble-bg); border: 1px solid var(--user-bubble-border);
+      border-radius: 14px 14px 4px 14px; color: var(--user-bubble-text);
+    }
+
+    .msg-sources { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .source-pill {
+      font-size: 10px; padding: 3px 10px; border-radius: 12px;
+      background: var(--source-bg); border: 1px solid var(--border);
+      color: var(--text-muted); font-family: var(--mono);
+    }
+    .source-pill.upload { border-color: var(--green-border); color: var(--green-text); background: var(--green-badge); }
+
+    .msg-bubble strong { color: var(--accent); font-weight: 600; }
+    .msg-bubble code {
+      background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+      font-family: var(--mono); font-size: 12px;
+    }
+    .msg-bubble pre {
+      background: var(--pre-bg); padding: 12px 14px; border-radius: 8px;
+      overflow-x: auto; margin: 8px 0; border: 1px solid var(--border);
+    }
+    .msg-bubble pre code { background: none; padding: 0; }
+
+    .typing { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .typing-dots { display: flex; gap: 4px; padding: 12px 18px; border-radius: 14px 14px 14px 4px; background: var(--bg-surface); border: 1px solid var(--assist-bubble-border); }
+    .typing-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.30s; }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50%      { opacity: 1;   transform: scale(1); }
+    }
+
+    .suggestions { padding: 0 28px 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-suggest {
+      padding: 8px 14px; border-radius: 20px;
+      background: var(--bg-surface); border: 1px solid var(--border);
+      color: var(--text-muted); cursor: pointer; font-size: 12px;
+      font-family: var(--sans); transition: all 0.15s;
+    }
+    .btn-suggest:hover { border-color: var(--border-hover); color: var(--accent); }
+
+    /* ── Upload area ───────────────────────────────────────── */
+    .uploaded-files {
+      padding: 0 28px 8px; display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .file-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; padding: 4px 10px; border-radius: 14px;
+      background: var(--green-badge); border: 1px solid var(--green-border);
+      color: var(--green-text); font-family: var(--mono);
+    }
+    .file-chip-remove {
+      cursor: pointer; font-size: 13px; opacity: 0.6;
+      transition: opacity 0.15s; background: none; border: none;
+      color: var(--green-text); font-family: var(--sans); padding: 0; line-height: 1;
+    }
+    .file-chip-remove:hover { opacity: 1; }
+
+    .input-area {
+      padding: 16px 28px 20px; border-top: 1px solid var(--border);
+      background: var(--input-bg);
+    }
+    .input-area.drag-over { background: var(--upload-hover); }
+    .input-row { display: flex; gap: 10px; align-items: flex-end; }
+    .input-wrap {
+      flex: 1; background: var(--bg-surface);
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 16px; display: flex; align-items: center;
+      transition: border-color 0.15s;
+    }
+    .input-wrap:focus-within { border-color: var(--border-hover); }
+    #question {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text-primary); font-size: 14px; font-family: var(--sans);
+    }
+    #question::placeholder { color: var(--text-muted); }
+
+    .btn-upload {
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+      font-size: 18px; padding: 2px 6px; transition: color 0.15s; line-height: 1;
+    }
+    .btn-upload:hover { color: var(--accent); }
+
+    .btn-send {
+      padding: 12px 20px; border-radius: 10px;
+      border: 1px solid var(--border-hover);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: var(--sans); transition: all 0.15s;
+    }
+    .btn-send.active   { background: var(--gradient-btn); color: #fff; }
+    .btn-send.disabled { background: var(--bg-surface); color: var(--text-muted); cursor: default; }
+
+    .input-footer {
+      margin-top: 8px; font-size: 10px; color: var(--text-dim);
+      text-align: center; font-family: var(--mono);
+    }
+
+    /* ── Response Profile Section (collapsible) ────────────── */
+    .response-profile-section {
+      border-top: 1px solid var(--border);
+    }
+    .response-profile-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 12px 20px 10px;
+      background: none; border: none; cursor: pointer;
+      font-family: var(--sans);
+    }
+    .response-profile-toggle:hover .profile-heading {
+      color: var(--text-secondary);
+    }
+    .response-profile-toggle .profile-heading {
+      margin-bottom: 0;
+      transition: color 0.15s;
+    }
+    .response-profile-chevron {
+      font-size: 12px; color: var(--text-dim);
+      transition: transform 0.2s ease;
+    }
+    .response-profile-chevron.open {
+      transform: rotate(180deg);
+    }
+    .response-profile-drawer {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .response-profile-drawer.open {
+      max-height: 600px; overflow-y: auto;
+    }
+    .response-profile-drawer .profile-section {
+      padding-top: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .messages { padding: 16px; }
+      .input-area { padding: 12px 16px 16px; }
+      .msg-bubble { max-width: 90%; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <div class="sidebar-title">THRESHER-CHAT</div>
+        <div class="sidebar-sub">Local AI Assistant</div>
+      </div>
+    </div>
+
+    <div class="sidebar-scroll">
+      <div class="sidebar-status">
+        <div class="status-row"><span>THRESHER:</span><span class="status-val" id="status-thresher">Unknown</span></div>
+        <div class="status-row"><span>THRESHER-Chat:</span><span class="status-val" id="status-chat-version">Unknown</span></div>
+        <div class="status-row"><span>Embed Model:</span><span class="status-val" id="status-embed-model">Unknown</span></div>
+        <div class="status-row"><span>Chat Model:</span><span class="status-val" id="status-model">Unknown</span></div>
+        <div class="status-row"><span>Status:</span><span class="status-val" id="status-health">Checking…</span></div>
+      </div>
+
+      <!-- ── Memory Section ─────────────────────────────────── -->
+      <div class="memory-section" id="memory-section">
+        <div class="memory-heading">User Memory</div>
+
+        <div id="memory-stats-container">
+          <div class="memory-stats-row">
+            <span>Sessions:</span>
+            <span class="mem-val" id="mem-sessions">0</span>
+          </div>
+          <div class="memory-stats-row">
+            <span>Profile Tags:</span>
+            <span class="mem-val" id="mem-profile">0 tags</span>
+          </div>
+          <div class="memory-stats-row">
+            <span>Objectives:</span>
+            <span class="mem-val" id="mem-objectives">0 active</span>
+          </div>
+          <div class="memory-stats-row">
+            <span>Messages:</span>
+            <span class="mem-val" id="mem-messages">0</span>
+          </div>
+        </div>
+
+        <div class="memory-actions">
+          <button class="btn-memory btn-save-session" id="btn-save-session"
+                  onclick="saveSession()" title="Summarize session, update history, extract profile and objectives">
+            Save
+          </button>
+          <button class="btn-memory" onclick="toggleDrawer('profile')" title="View/edit User profile tags">
+            Profile Tags
+          </button>
+          <button class="btn-memory" onclick="toggleDrawer('objectives')" title="View/edit User research objectives">
+            Goals
+          </button>
+          <button class="btn-memory" onclick="toggleDrawer('summaries')" title="View past conversation session summaries">
+            History
+          </button>
+          <button class="btn-memory" onclick="exportMemory()" title="Export User memory as JSON">
+            Export Json
+          </button>
+          <button class="btn-memory" onclick="importMemory()" title="Import User memory from JSON">
+            Import Json
+          </button>
+          <button class="btn-memory btn-danger" onclick="clearMemory()" title="Delete all User memory">
+            Delete All
+          </button>
+        </div>
+
+        <!-- Expandable drawers -->
+        <div class="memory-drawer" id="drawer-profile">
+          <div id="profile-mem-list"></div>
+        </div>
+        <div class="memory-drawer" id="drawer-objectives">
+          <div id="objectives-list"></div>
+        </div>
+        <div class="memory-drawer" id="drawer-summaries">
+          <div id="summaries-list"></div>
+        </div>
+      </div>
+
+      <!-- ── Response Profile (collapsible drawer) ──────────── -->
+      <div class="response-profile-section">
+        <button class="response-profile-toggle" onclick="toggleResponseProfile()">
+          <div class="profile-heading">Response Profile</div>
+            <span class="response-profile-chevron" id="response-profile-chevron">&#9660;</span>
+        </button>
+        <div class="response-profile-drawer" id="response-profile-drawer">
+          <div class="profile-section">
+            <div id="profile-list">
+              <div style="padding:12px;color:var(--text-muted);font-size:12px;">Loading profiles...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      All data stays on your local system<br/>
+      Powered by THRESHER + Ollama + Flask
+    </div>
+  </div>
+
+  <!-- ── Main ─────────────────────────────────────────────── -->
+  <div class="main">
+    <div class="header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn-sidebar-toggle" id="btn-sidebar" onclick="toggleSidebar()" title="Toggle sidebar">&#9776;</button>
+        <span class="header-title" id="header-title">Untitled</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-header btn-export" onclick="toggleTheme()" id="btn-theme">&#127769; Dark</button>
+        <button class="btn-header btn-export" onclick="exportChat()">Export Chat</button>
+        <button class="btn-header btn-clear"  onclick="clearChat()">Clear</button>
+      </div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="uploaded-files" id="uploaded-files"></div>
+
+    <div class="input-area" id="input-area">
+      <div class="input-row">
+        <div class="input-wrap">
+          <button class="btn-upload" onclick="document.getElementById('file-input').click()" title="Upload a file">&#128206;</button>
+          <input type="text" id="question"
+                 placeholder="What would you like to know about THRESHER?"
+                 autocomplete="off" />
+        </div>
+        <button class="btn-send disabled" id="btn-send" onclick="sendMessage()">Send&thinsp;&#8593;</button>
+      </div>
+      <div class="input-footer" id="input-footer">
+        THRESHER Chat is exclusively a THRESHER assistant. Questions not related to THRESHER will not be answered.<br/>
+        Drag &amp; drop files to the <strong>input area</strong> or click &#128206; to upload.
+      </div>
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="file-input" style="display:none" multiple
+           accept=".txt,.csv,.tsv,.tab,.log,.fasta,.fa,.fna,.faa,.gff,.gff3,.bed,.vcf,.nwk,.newick,.nex,.nexus,.json,.yaml,.yml,.md,.rst"
+           onchange="handleFileSelect(this.files)" />
+    <input type="file" id="memory-import-input" accept=".json"
+           style="display:none" onchange="handleMemoryImport(event)" />
+  </div>
+
+</div>
+
+<script>
+// ─── Theme ────────────────────────────────────────────────────
+(function() {
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+})();
+
+// ─── State ────────────────────────────────────────────────────
+let profile  = null;
+let isTyping = false;
+let titleSet = false;
+
+const $messages      = document.getElementById("messages");
+const $input         = document.getElementById("question");
+const $btnSend       = document.getElementById("btn-send");
+const $uploadedFiles = document.getElementById("uploaded-files");
+const $inputArea     = document.getElementById("input-area");
+
+// ─── Init ─────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded", () => {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  document.getElementById("btn-theme").innerHTML = isDark ? "&#9728;&#65039; Light" : "&#127769; Dark";
+
+  if (localStorage.getItem("sidebar") === "collapsed") {
+    document.querySelector(".sidebar").classList.add("collapsed");
+  }
+
+  addMessage("assistant",
+    "Welcome to <strong>THRESHER Chat</strong> — your local AI assistant running entirely on your machine.\n\n" +
+    "Select a <strong>Response Profile</strong> from the sidebar to tailor answers to your background.\n\n" +
+    "I can help you with:\n" +
+    "• <strong>Getting started</strong> — installation, setup, and which module or mode to use\n" +
+    "• <strong>Understanding the science</strong> — how phylothresholds work\n" +
+    "• <strong>Running THRESHER</strong> — CLI commands, input file requirements, and pipeline configuration\n" +
+    "• <strong>Interpreting results</strong> — what your output files mean and how to evaluate strain compositions"
+  );
+  checkHealth();
+  loadProfiles();
+  loadMemoryStats();
+});
+
+$input.addEventListener("input",   updateSendBtn);
+$input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+// ─── Drag & Drop ──────────────────────────────────────────────
+$inputArea.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  $inputArea.classList.add("drag-over");
+});
+$inputArea.addEventListener("dragleave", () => {
+  $inputArea.classList.remove("drag-over");
+});
+$inputArea.addEventListener("drop", (e) => {
+  e.preventDefault();
+  $inputArea.classList.remove("drag-over");
+  if (e.dataTransfer.files.length) {
+    handleFileSelect(e.dataTransfer.files);
+  }
+});
+
+// ─── File Upload ──────────────────────────────────────────────
+async function handleFileSelect(files) {
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (data.error) {
+        addMessage("assistant", `<strong>Upload failed:</strong> ${escapeHtml(data.error)}`);
+      } else {
+        addFileChip(data.filename);
+        addMessage("assistant",
+          `<strong>File uploaded:</strong> <code>${escapeHtml(data.filename)}</code>\n` +
+          `${data.lines} lines, ${data.chars.toLocaleString()} characters\n\n` +
+          `<strong>Preview:</strong>\n<pre><code>${escapeHtml(data.preview)}</code></pre>\n\n` +
+          `You can now ask questions about this file.`
+        );
+      }
+    } catch (err) {
+      addMessage("assistant", `<strong>Upload error:</strong> Could not reach the server.`);
+    }
+  }
+  document.getElementById("file-input").value = "";
+}
+
+function addFileChip(filename) {
+  const chip = document.createElement("span");
+  chip.className = "file-chip";
+  chip.dataset.filename = filename;
+  chip.innerHTML = `&#128196; ${escapeHtml(filename)} <button class="file-chip-remove" onclick="removeFile(this)" title="Remove file">&times;</button>`;
+  $uploadedFiles.appendChild(chip);
+}
+
+async function removeFile(btn) {
+  const chip = btn.parentElement;
+  const filename = chip.dataset.filename;
+  try {
+    await fetch("/api/upload/remove", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename }),
+    });
+  } catch {}
+  chip.remove();
+  addMessage("assistant", `File removed: <code>${escapeHtml(filename)}</code>`);
+}
+
+// ─── Sidebar toggle ───────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  sidebar.classList.toggle("collapsed");
+  localStorage.setItem("sidebar", sidebar.classList.contains("collapsed") ? "collapsed" : "open");
+}
+
+// ─── Theme toggle ─────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const btn  = document.getElementById("btn-theme");
+  if (html.getAttribute("data-theme") === "dark") {
+    html.setAttribute("data-theme", "light");
+    btn.innerHTML = "&#127769; Dark";
+    localStorage.setItem("theme", "light");
+  } else {
+    html.setAttribute("data-theme", "dark");
+    btn.innerHTML = "&#9728;&#65039; Light";
+    localStorage.setItem("theme", "dark");
+  }
+}
+
+// ─── Health check ─────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await fetch("/api/health");
+    const d = await r.json();
+    document.getElementById("status-health").textContent      = "Ready";
+    document.getElementById("status-model").textContent       = d.chat_model;
+    document.getElementById("status-embed-model").textContent = d.embed_model;
+    document.getElementById("status-thresher").textContent    = d.thresher_version;
+    document.getElementById("status-chat-version").textContent = d.chat_version;
+  } catch {
+    document.getElementById("status-health").textContent   = "Offline";
+    document.getElementById("status-thresher").textContent = "Unknown";
+    document.getElementById("status-chat-version").textContent = "Unknown";
+  }
+}
+
+// ─── Dynamic Profiles ──────────────────────────────────────────
+async function loadProfiles() {
+  const container = document.getElementById("profile-list");
+  try {
+    const res = await fetch("/api/profiles");
+    const data = await res.json();
+    if (!data.profiles || data.profiles.length === 0) {
+      container.innerHTML =
+        '<div style="padding:12px;color:var(--text-muted);font-size:12px;">No profiles found.</div>';
+      return;
+    }
+    container.innerHTML = "";
+    data.profiles.forEach(p => {
+      const btn = document.createElement("button");
+      btn.className = "profile-btn";
+      btn.dataset.profile = p.key;
+      btn.dataset.label = p.label;
+      btn.dataset.shortDesc = p.short_desc;
+      btn.onclick = function () { setProfile(this); };
+      btn.innerHTML =
+        '<div>' +
+          '<div class="profile-name">' + escapeHtml(p.label) + '</div>' +
+          '<div class="profile-desc">' + escapeHtml(p.short_desc) + '</div>' +
+        '</div>';
+      container.appendChild(btn);
+    });
+  } catch {
+    container.innerHTML =
+      '<div style="padding:12px;color:var(--text-muted);font-size:12px;">Could not load profiles.</div>';
+  }
+}
+
+function setProfile(btn) {
+  document.querySelectorAll(".profile-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  profile = btn.dataset.profile;
+
+  const user_label = escapeHtml(btn.dataset.label);
+  const message_prefix = `Profile switched to **${user_label}**\n\n`;
+
+  addMessage(
+    "assistant",
+    `Profile switched to **${escapeHtml(btn.dataset.label)}**\n\n` +
+    (
+      btn.dataset.label.toLowerCase() === "other"
+        ? "Please describe your background and what you're hoping to learn about THRESHER. I'll tailor my responses to be most useful for you."
+        : `Responses will now focus on ${escapeHtml(btn.dataset.shortDesc)}.`
+    )
+  );
+}
+
+// ─── Response Profile Drawer Toggle ───────────────────────────
+function toggleResponseProfile() {
+  const drawer = document.getElementById("response-profile-drawer");
+  const chevron = document.getElementById("response-profile-chevron");
+  drawer.classList.toggle("open");
+  chevron.classList.toggle("open");
+}
+
+// ─── Dynamic title ────────────────────────────────────────────
+async function generateTitle(question) {
+  if (titleSet) return;
+  titleSet = true;
+  try {
+    const res = await fetch("/api/title", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
+    const data = await res.json();
+    if (data.title) document.getElementById("header-title").textContent = data.title;
+  } catch {}
+}
+
+// ─── Messages ─────────────────────────────────────────────────
+function addMessage(role, html, sources) {
+  const row = document.createElement("div");
+  row.className = `msg-row ${role}`;
+
+  const meta = document.createElement("div");
+  meta.className = "msg-meta";
+  const label = document.createElement("span");
+  label.className = "msg-label";
+  label.textContent = role === "assistant" ? "THRESHER-Chat" : "You";
+  meta.append(label);
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble";
+  bubble.innerHTML = renderMarkdown(html);
+
+  row.append(meta, bubble);
+
+  if (sources && sources.length) {
+    const srcDiv = document.createElement("div");
+    srcDiv.className = "msg-sources";
+    sources.forEach(s => {
+      const pill = document.createElement("span");
+      pill.className = "source-pill";
+      pill.textContent = s.source;
+      srcDiv.appendChild(pill);
+    });
+    row.appendChild(srcDiv);
+  }
+
+  $messages.appendChild(row);
+  $messages.scrollTop = $messages.scrollHeight;
+}
+
+function showTyping() {
+  const el = document.createElement("div");
+  el.className = "typing"; el.id = "typing-indicator";
+  el.innerHTML = `<div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  $messages.appendChild(el);
+  $messages.scrollTop = $messages.scrollHeight;
+}
+function hideTyping() {
+  const el = document.getElementById("typing-indicator");
+  if (el) el.remove();
+}
+
+// ─── Send ─────────────────────────────────────────────────────
+async function sendMessage() {
+  const q = $input.value.trim();
+  if (!q || isTyping) return;
+
+  addMessage("user", escapeHtml(q));
+  $input.value = ""; updateSendBtn();
+  isTyping = true; showTyping();
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q, profile: profile || "" }),
+    });
+
+    const data = await res.json();
+    hideTyping(); isTyping = false;
+
+    if (data.error) {
+      addMessage("assistant", `<strong>Error:</strong> ${escapeHtml(data.error)}`);
+    } else {
+      addMessage("assistant", data.answer, data.sources);
+      generateTitle(q);
+    }
+  } catch (err) {
+    hideTyping(); isTyping = false;
+    addMessage("assistant", `<strong>Connection error:</strong> Could not reach the server. Is it running?`);
+  }
+}
+
+function askSuggested(btn) { $input.value = btn.textContent; sendMessage(); }
+function updateSendBtn() {
+  $btnSend.className = `btn-send ${$input.value.trim().length > 0 ? "active" : "disabled"}`;
+}
+
+// ─── Clear / Export ───────────────────────────────────────────
+async function clearChat() {
+  try { await fetch("/api/clear", { method: "POST" }); } catch {}
+  $messages.innerHTML = "";
+  $uploadedFiles.innerHTML = "";
+  addMessage("assistant", "Chat history cleared. Ask me anything about THRESHER!");
+  document.getElementById("header-title").textContent = "Untitled";
+  titleSet = false;
+  loadMemoryStats();
+}
+
+function exportChat() {
+  const msgs = $messages.querySelectorAll(".msg-row");
+  const title = document.getElementById("header-title").textContent || "Untitled";
+  let text = `THRESHER Chat Export — ${title}\n` + "=".repeat(50) + "\n\n";
+  msgs.forEach(row => {
+    const role   = row.classList.contains("user") ? "You" : "THRESHER-Chat";
+    const bubble = row.querySelector(".msg-bubble");
+    if (bubble) text += `${role}: ${bubble.textContent.trim()}\n\n`;
+  });
+  const blob = new Blob([text], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const safeTitle = title.replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
+  a.download = `${safeTitle}_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── Memory System ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+
+async function loadMemoryStats() {
+  try {
+    const resp = await fetch("/api/memory/stats");
+    const data = await resp.json();
+    if (data.enabled) {
+      document.getElementById("mem-sessions").textContent = data.total_sessions;
+      document.getElementById("mem-profile").textContent =
+        data.profile_tags + " tag" + (data.profile_tags !== 1 ? "s" : "");
+      document.getElementById("mem-objectives").textContent =
+        data.active_objectives + " active";
+      document.getElementById("mem-messages").textContent = data.total_messages;
+    }
+  } catch (e) {
+    document.getElementById("memory-section").style.display = "none";
+  }
+}
+
+// ── Save Session ──────────────────────────────────────────────
+async function saveSession() {
+  const btn = document.getElementById("btn-save-session");
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = "Saving...";
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch("/api/memory/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    const data = await resp.json();
+
+    if (data.status === "ok") {
+      btn.innerHTML = "Saved!";
+      loadMemoryStats();
+    } else if (data.reason === "Too few messages") {
+      btn.innerHTML = "Need more messages";
+    } else {
+      btn.innerHTML = "Error";
+    }
+  } catch (e) {
+    btn.innerHTML = "Error";
+  }
+  setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 2000);
+}
+
+// ── Drawer Toggle ─────────────────────────────────────────────
+function closeAllDrawers() {
+  document.querySelectorAll(".memory-drawer").forEach(d => d.classList.remove("open"));
+}
+
+function toggleDrawer(name) {
+  const drawer = document.getElementById("drawer-" + name);
+  const isOpen = drawer.classList.contains("open");
+  closeAllDrawers();
+  if (!isOpen) {
+    if (name === "profile") loadMemProfile();
+    else if (name === "objectives") loadObjectives();
+    else if (name === "summaries") loadSummaries();
+    drawer.classList.add("open");
+  }
+}
+
+// ── Profile Tags Drawer ───────────────────────────────────────
+async function loadMemProfile() {
+  try {
+    const resp = await fetch("/api/memory/profile");
+    const data = await resp.json();
+    const list = document.getElementById("profile-mem-list");
+
+    if (data.tags && data.tags.length > 0) {
+      list.innerHTML = data.tags.map(t => {
+        const isRejected = t.status === "rejected";
+        const toggleBtn = isRejected
+          ? '<button onclick="reactivateTag(' + t.id + ')" title="Reactivate tag">&#9723;</button>'
+          : '<button onclick="rejectTag(' + t.id + ')" title="Mark incorrect">&#10007;</button>';
+        return '<div class="objective-item' + (isRejected ? ' rejected' : '') + '">' +
+          '<span class="obj-status ' + t.status + '">' + t.status + '</span>' +
+          '<span>' + escapeHtml(t.tag) + '</span>' +
+          '<span class="obj-actions">' +
+            toggleBtn +
+            '<button onclick="deleteTag(' + t.id + ')" title="Delete permanently">&#128465;</button>' +
+          '</span>' +
+        '</div>';
+      }).join("");
+    } else {
+      list.innerHTML = '<div class="drawer-empty">No profile tags yet. Click "Save" after a conversation.</div>';
+    }
+  } catch (e) {
+    console.error("Failed to load profile tags:", e);
+  }
+}
+
+async function rejectTag(tagId) {
+  try {
+    await fetch("/api/memory/profile/" + tagId + "/reject", { method: "PATCH" });
+    loadMemoryStats();
+    loadMemProfile();
+  } catch (e) {
+    console.error("Failed to reject tag:", e);
+  }
+}
+
+async function reactivateTag(tagId) {
+  try {
+    await fetch("/api/memory/profile/" + tagId + "/reactivate", { method: "PATCH" });
+    loadMemoryStats();
+    loadMemProfile();
+  } catch (e) {
+    console.error("Failed to reactivate tag:", e);
+  }
+}
+
+async function deleteTag(tagId) {
+  try {
+    await fetch("/api/memory/profile/" + tagId, { method: "DELETE" });
+    loadMemoryStats();
+    loadMemProfile();
+  } catch (e) {
+    console.error("Failed to delete tag:", e);
+  }
+}
+
+// ── Objectives Drawer ─────────────────────────────────────────
+async function loadObjectives() {
+  try {
+    const resp = await fetch("/api/memory/objectives");
+    const data = await resp.json();
+    const list = document.getElementById("objectives-list");
+
+    if (data.objectives && data.objectives.length > 0) {
+      list.innerHTML = data.objectives.map(o => {
+        const sc = o.status;
+        const toggleBtn = sc === "active"
+          ? '<button onclick="updateObjective(' + o.id + ', \'completed\')" title="Mark completed">&#9989;</button>'
+          : '<button onclick="updateObjective(' + o.id + ', \'active\')" title="Reactivate">&#9723;</button>';
+        return '<div class="objective-item">' +
+          '<span class="obj-status ' + sc + '">' + o.status + '</span>' +
+          '<span>' + escapeHtml(o.objective) + '</span>' +
+          '<span class="obj-actions">' +
+            toggleBtn +
+            '<button onclick="deleteObjective(' + o.id + ')" title="Delete">&#10005;</button>' +
+          '</span>' +
+        '</div>';
+      }).join("");
+    } else {
+      list.innerHTML = '<div class="drawer-empty">No research objectives yet. Click "Save" after discussing your goals.</div>';
+    }
+  } catch (e) {
+    console.error("Failed to load objectives:", e);
+  }
+}
+
+async function updateObjective(objId, status) {
+  try {
+    await fetch("/api/memory/objectives/" + objId, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: status }),
+    });
+    loadMemoryStats();
+    loadObjectives();
+  } catch (e) {
+    console.error("Failed to update objective:", e);
+  }
+}
+
+async function deleteObjective(objId) {
+  try {
+    await fetch("/api/memory/objectives/" + objId, { method: "DELETE" });
+    loadMemoryStats();
+    loadObjectives();
+  } catch (e) {
+    console.error("Failed to delete objective:", e);
+  }
+}
+
+// ── Summaries Drawer ──────────────────────────────────────────
+async function loadSummaries() {
+  try {
+    const resp = await fetch("/api/memory/summaries");
+    const data = await resp.json();
+    const list = document.getElementById("summaries-list");
+
+    if (data.summaries && data.summaries.length > 0) {
+      list.innerHTML = data.summaries.map(s =>
+        '<div class="summary-item">' +
+          '<div class="summary-date">' + s.created_at.slice(0, 10) + ' &middot; ' + s.message_count + ' messages</div>' +
+          '<div>' + escapeHtml(s.summary) + '</div>' +
+        '</div>'
+      ).join("");
+    } else {
+      list.innerHTML = '<div class="drawer-empty">No session summaries yet.</div>';
+    }
+  } catch (e) {
+    console.error("Failed to load summaries:", e);
+  }
+}
+
+// ── Export / Import / Clear Memory ────────────────────────────
+async function exportMemory() {
+  try {
+    const resp = await fetch("/api/memory/export");
+    const data = await resp.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "thresher-chat-memory-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch (e) {
+    console.error("Failed to export memory:", e);
+    addMessage("assistant", "Failed to export memory.");
+  }
+}
+
+function importMemory() {
+  document.getElementById("memory-import-input").click();
+}
+
+async function handleMemoryImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const resp = await fetch("/api/memory/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const result = await resp.json();
+    if (result.status === "ok") {
+      addMessage("assistant", "Memory imported successfully.");
+      loadMemoryStats();
+    } else {
+      addMessage("assistant", "Import failed: " + escapeHtml(result.error || "Unknown error"));
+    }
+  } catch (e) {
+    addMessage("assistant", "Import failed: invalid JSON file.");
+  }
+  event.target.value = "";
+}
+
+async function clearMemory() {
+  if (!confirm("Delete ALL stored memory? This cannot be undone.\n\nProfile tags, objectives, summaries, and conversation history will be removed.")) return;
+  try {
+    const resp = await fetch("/api/memory/clear", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await resp.json();
+    if (data.status === "ok") {
+      addMessage("assistant", "All memory has been cleared.");
+      loadMemoryStats();
+      closeAllDrawers();
+    }
+  } catch (e) {
+    console.error("Failed to clear memory:", e);
+  }
+}
+
+// ── Auto-save on page unload ──────────────────────────────────
+window.addEventListener("beforeunload", () => {
+  navigator.sendBeacon(
+    "/api/memory/save",
+    new Blob([JSON.stringify({})], { type: "application/json" })
+  );
+});
+
+// ─── Markdown renderer ───────────────────────────────────────
+function renderMarkdown(text) {
+  return text
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br/>');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+</script>
+</body>
+</html>
