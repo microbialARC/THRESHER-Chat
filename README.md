@@ -14,7 +14,6 @@ phylothresholds, strains, or transmission clusters. To analyze data, install and
 ## **Graphical Workflow**
 ![Graphical Workflow](docs/images/thresher_chat_workflow.png)
 
-
 ## Documentation
 ### Getting Started
 - [Requirements](docs/requirements.md)
@@ -37,10 +36,6 @@ phylothresholds, strains, or transmission clusters. To analyze data, install and
   [THRESHER repository](https://github.com/microbialARC/THRESHER/issues).
 - For problems with **THRESHER-Chat** itself, start with [troubleshooting](docs/troubleshooting.md), then
   open an issue on the [THRESHER-Chat repository](https://github.com/microbialARC/THRESHER-Chat/issues).
-
-## License
-
-THRESHER-Chat is released under the [GNU General Public License v3.0](LICENSE).
 
 ## Authors
 
