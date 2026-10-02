@@ -19,9 +19,9 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 from thresher_chat.profiles import get_profile_prompt, get_profiles_for_frontend
 
-# DEFAULT MODEL is not imported for now 
 from thresher_chat.config import (
     DEFAULT_DB_DIR,
+    DEFAULT_MODEL,
     MEMORY_WINDOW,
     RETRIEVER_K,
     SYSTEM_PROMPT,
@@ -640,14 +640,14 @@ def run(args):
     if not os.path.exists(db_dir):
         print("ERROR: Vector database not found.")
         print("Please index the THRESHER repository first:")
-        print("thresher-chat ingest --repo /path/to/thresher_repo --db_dir /path/to/db")
+        print("thresher-chat ingest --repo /path/to/thresher_repo --db-dir /path/to/db")
         sys.exit(1)
     config = load_config(db_dir)
     # Get the model and embedding model from config file
     # This means if the users are changing the model
     # they need to re-index to update the config
     # but it ensures consistency between the chain and the vector DB.
-    model = args.model or config.get("model")
+    model = args.model or config.get("model", DEFAULT_MODEL)
     embed_model = args.embed_model or config.get("embed_model")
 
     # Track models for cleanup on shutdown

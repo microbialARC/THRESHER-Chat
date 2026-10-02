@@ -18,7 +18,6 @@ from thresher_chat.config import (
     DEFAULT_EMBED_MODEL,
     DEFAULT_MODEL,
     MEMORY_WINDOW,
-    RETRIEVER_FETCH_K,
     RETRIEVER_K,
     SYSTEM_PROMPT,
 )
@@ -172,7 +171,6 @@ def run(args):
     if DEBUG_MODE:
         print(f"  Debug mode: ON")
         print(f"  RETRIEVER_K: {RETRIEVER_K}")
-        print(f"  RETRIEVER_FETCH_K: {RETRIEVER_FETCH_K}")
     print()
 
     try:
